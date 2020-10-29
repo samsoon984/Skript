@@ -1,5 +1,5 @@
 #use with skbee
-
+#if you want to hover your item on chat, open your inventory, and middle-click item what you want to show
 
 on inventory click:
 	if clicked type is middle mouse button:
