@@ -1,0 +1,19 @@
+#use with skbee
+
+
+on inventory click:
+	if clicked type is middle mouse button:
+		if event-slot is not air:
+			if clicked item is not shulker box:
+				if clicked item's name is set:
+					set {_dlfma} to clicked item's name
+					set {_t} to text component from "<%player%> &f[ %{_dlfma}%&f ]"
+					set hover event of {_t} to a new hover event showing clicked item
+					loop players:
+						send component {_t} to loop-value
+				else:
+					set {_dlfma} to the clicked item
+					set {_t} to text component from "<%player%> &f[ %{_dlfma}%&f ]"
+					set hover event of {_t} to a new hover event showing clicked item
+					loop players:
+						send component {_t} to loop-value
