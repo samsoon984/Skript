@@ -1,0 +1,97 @@
+options:
+	name: &f[&a수표&f]
+
+
+variables:
+	{check.%player%.임시설정금액} = 0
+	{check.%player%.설정금액} = 0
+	{check.%player%.개수} = 1
+	{casino.sam_soon} = 0
+
+
+
+command /돈 [<player>]:
+	aliases: /ehs
+	trigger:
+		if arg 1 is not set:
+			send "&f&l[&c&l보유중인 금액&f&l] : &6%player's money%&f"
+		if arg 1 is set:
+			send "&f&l[&c&l%arg-1%님이 보유중인 금액&f&l] : &6&l%arg-1's money%&f"
+
+
+			
+
+command /수표 [<text>] [<text>] [<text>]:
+	aliases: /tnvy
+	trigger:
+		if arg 1 is not set:
+			send "{@name} /수표 발행 (금액) (개수)"
+			send title "&f채팅창의 &c주의사항&f을 읽어주세요."
+			send "{@name} &c※&f주의&c※ &f인벤토리의 공간이 부족하면 돈만 빠져나가고 수표는 발행이 되지 않습니다. 수표를 발행하실때는 인벤토리의 남은 공간을 꼭 확인하고 발행해주세요."
+		if arg 1 is "발행" or "qkfgod":
+			set {check.%player%.임시설정금액} to arg-2 parsed as an number
+			set {check.%player%.개수} to arg-3 parsed as an number
+			if arg 2 is set:
+				if arg 3 is set:
+					if {check.%player%.개수} <= 64:
+						if {check.%player%.임시설정금액}*{check.%player%.개수} > 0:
+							if {check.%player%.임시설정금액} is integer:
+								if {check.%player%.개수} is integer:
+									if player's money >= {check.%player%.임시설정금액}*{check.%player%.개수}:
+										
+										set {check.%player%.설정금액} to {check.%player%.임시설정금액}
+										set {수표.%player%} to paper named "&f[&a&l수표&f] &6%{check.%player%.설정금액}/10000%만원"
+										set 1st line of {수표.%player%}'s lore to "&6%{check.%player%.설정금액}%원"
+										enchant {수표.%player%} with unbreaking 3
+										If player can hold {수표.%player%}:
+											loop {check.%player%.개수} times:
+												give {수표.%player%} to player
+										else:
+											loop {check.%player%.개수} times:
+												drop {수표.%player%} at player
+										remove {check.%player%.설정금액}*{check.%player%.개수} from player's money
+										send "{@name} &6%{check.%player%.설정금액}%&f원의 수표가 &6%{check.%player%.개수}%개 &f발행되었습니다."
+										send "{@name} 차감: &6%{check.%player%.설정금액}*{check.%player%.개수}%원 &f현재 남은돈: &6%player's money%"
+										execute console command "w sam_soon {@name} %player%님이 %{check.%player%.설정금액}*{check.%player%.개수}%의 돈을 수표로 발행했습니다. 남은 카지노 보유금: %{casino.sam_soon}%"
+										set {check.%player%.설정금액} to 0
+										set {check.%player%.임시설정금액} to 0
+									else:
+										send "{@name} 수표를 발행하기위한 돈이 충분하지 않습니다."
+								else:
+									send "{@name} 설정 금액은 양의 정수만 가능합니다."
+							else:
+								send "{@name} 설정 금액은 양의 정수만 가능합니다."
+						else:
+							send "{@name} 설정 금액은 양의 정수만 가능합니다."
+					else:
+						send "{@name} 수표의 개수는 최대 64개까지 설정할 수 있습니다."
+				else:
+					send "{@name} 발행할 수표의 개수를 입력해 주세요."
+			else:
+				send "{@name} /수표 발행 (금액), 금액을 입력해 주세요."
+			stop
+
+
+
+
+
+
+
+
+on rightclick holding paper:
+	if name of player's tool contain "수표":
+		set {_point} to uncolored line 1 of lore of player's tool
+		replace " " and "원" and "&6" with "" in {_point}
+		set {_point} to {_point} parsed as integer
+		set {_item} to player's tool named "&f[&a수표&f]"
+		remove 1 of tool from tool
+		#subtract 1 of {_item} from player's inventory
+		add {_point} to player's money
+		send "&f[&a수표&f] &6%{_point}%&f원이 추가되어 &6%player's money%&f이 되었습니다."
+		play sound "block.wooden_door.open" with volume 1 and pitch 1.5
+		wait 3 tick
+		play sound "block.iron_trapdoor.close" with volume 1 and pitch 1.5
+		play sound "block.note_block.bell" with volume 1 and pitch 1
+		#play sound "entity.arrow.hit_player" with volume 0.7 and pitch 2
+		#play sound "entity.player.levelup" with volume 0.5 and pitch 1
+		stop
